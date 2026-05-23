@@ -161,6 +161,8 @@ Arys_EV_Simulator
 AI tools used during development:
 
 - ChatGPT
+- Claude
+
 
 How AI helped:
 
