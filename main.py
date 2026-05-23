@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 import time
+import csv
+import os
 
 # -----------------------------
 # Initial Vehicle Parameters
@@ -10,6 +12,26 @@ soc = 100
 temperature = 30
 torque = 0
 drive_enabled = True
+
+# -----------------------------
+# Create CSV Log File
+# -----------------------------
+log_file = "logs/telemetry.csv"
+
+if not os.path.exists(log_file):
+
+    with open(log_file, mode="w", newline="") as file:
+
+        writer = csv.writer(file)
+
+        writer.writerow([
+            "Time",
+            "Speed",
+            "SOC",
+            "Temperature",
+            "Torque",
+            "Throttle"
+        ])
 
 # -----------------------------
 # Main Window
@@ -94,6 +116,26 @@ throttle_slider = ttk.Scale(
 throttle_slider.pack()
 
 # -----------------------------
+# Log Telemetry
+# -----------------------------
+def log_telemetry(throttle):
+
+    current_time = time.strftime("%H:%M:%S")
+
+    with open(log_file, mode="a", newline="") as file:
+
+        writer = csv.writer(file)
+
+        writer.writerow([
+            current_time,
+            int(speed),
+            int(soc),
+            int(temperature),
+            torque,
+            int(throttle)
+        ])
+
+# -----------------------------
 # Update Simulation
 # -----------------------------
 def update_simulation():
@@ -110,18 +152,21 @@ def update_simulation():
 
         # Drive Modes
         if throttle < 30:
+
             mode_label.config(
                 text="Drive Mode: ECO",
                 fg="blue"
             )
 
         elif throttle < 70:
+
             mode_label.config(
                 text="Drive Mode: NORMAL",
                 fg="orange"
             )
 
         else:
+
             mode_label.config(
                 text="Drive Mode: SPORT",
                 fg="red"
@@ -140,11 +185,13 @@ def update_simulation():
         temperature += throttle * 0.002
 
     else:
+
         torque = 0
         speed *= 0.95
 
     # Fault Conditions
     if temperature > 60 or soc < 20:
+
         drive_enabled = False
 
         status_label.config(
@@ -188,6 +235,9 @@ Temp: {int(temperature)} C
     can_box.insert(tk.END, can_message)
     can_box.see(tk.END)
 
+    # Log Data
+    log_telemetry(throttle)
+
     # Repeat Loop
     root.after(500, update_simulation)
 
@@ -195,6 +245,7 @@ Temp: {int(temperature)} C
 # Fault Injection
 # -----------------------------
 def inject_fault():
+
     global temperature
 
     temperature = 70
